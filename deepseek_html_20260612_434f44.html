@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>山货店进销存</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .menu-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .menu-item:active {
+            transform: scale(0.95);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .menu-item .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .menu-item .title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .menu-item .desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 60px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+        }
+
+        .close-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+        }
+
+        .btn-danger {
+            background: #ff4757;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+
+        @media (max-width: 400px) {
+            .menu-item {
+                padding: 15px 10px;
+            }
+            
+            .modal-content {
+                margin: 10px;
+                padding: 15px;
+                margin-top: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏔️ 山货店进销存</h1>
+            <p>小型店铺管理助手</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="number" id="totalProducts">0</div>
+                <div class="label">商品种类</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="totalValue">¥0</div>
+                <div class="label">库存总值</div>
+            </div>
+        </div>
+
+        <div class="menu-grid">
+            <button class="menu-item" onclick="showModal('inventoryModal')">
+                <div class="icon">📦</div>
+                <div class="title">库存管理</div>
+                <div class="desc">查看和管理商品</div>
+            </button>
+            <button class="menu-item" onclick="showPurchaseForm()">
+                <div class="icon">📥</div>
+                <div class="title">进货</div>
+                <div class="desc">添加新货物</div>
+            </button>
+            <button class="menu-item" onclick="showSaleForm()">
+                <div class="icon">📤</div>
+                <div class="title">销售</div>
+                <div class="desc">记录销售</div>
+            </button>
+            <button class="menu-item" onclick="showRecords('sales')">
+                <div class="icon">📊</div>
+                <div class="title">记录</div>
+                <div class="desc">查看交易记录</div>
+            </button>
+            <button class="menu-item" onclick="showAddProductForm()">
+                <div class="icon">➕</div>
+                <div class="title">添加商品</div>
+                <div class="desc">新增商品种类</div>
+            </button>
+            <button class="menu-item" onclick="showLowStock()">
+                <div class="icon">⚠️</div>
+                <div class="title">库存预警</div>
+                <div class="desc">低库存提醒</div>
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn btn-danger" onclick="resetAllData()" style="width: auto; padding: 10px 30px;">
+                🔄 重置数据
+            </button>
+        </div>
+    </div>
+
+    <!-- 库存查看模态框 -->
+    <div id="inventoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📦 当前库存</h2>
+                <button class="close-btn" onclick="closeModal('inventoryModal')">×</button>
+            </div>
+            <div class="table-container">
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>商品</th>
+                            <th>库存</th>
+                            <th>售价</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 进货模态框 -->
+    <div id="purchaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📥 进货</h2>
+                <button class="close-btn" onclick="closeModal('purchaseModal')">×</button>
+            </div>
+            <form onsubmit="processPurchase(event)">
+                <div class="form-group">
+                    <label>选择商品</label>
+                    <select id="purchaseProduct" style="width:100%; padding:12px; border-radius:8px; border:2px solid #e0e0e0;" required>
+                        <option value="">请选择商品</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>进货数量</label>
+                    <input type="number" id="purchaseQuantity" min="1" required placeholder="输入数量">
+                </div>
+                <div class="form-group">
+                    <label>进货单价 (元)</label>
+                    <input type="number" id="purchasePrice" step="0.01" required placeholder="输入进货单价">
+                </div>
+                <button type="submit" class="btn">确认进货</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 销售模态框 -->
+    <div id="saleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📤 销售</h2>
+                <button class="close-btn" onclick="closeModal('saleModal')">×</button>
+            </div>
+            <form onsubmit="processSale(event)">
+                <div class="form-group">
+                    <label>选择商品</label>
+                    <select id="saleProduct" style="width:100%; padding:12px; border-radius:8px; border:2px solid #e0e0e0;" required>
+                        <option value="">请选择商品</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>销售数量</label>
+                    <input type="number" id="saleQuantity" min="1" required placeholder="输入数量">
+                </div>
+                <div class="form-group">
+                    <label>当前库存: <span id="currentStock">-</span></label>
+                </div>
+                <div class="form-group">
+                    <label>单价: <span id="salePrice">-</span></label>
+                </div>
+                <div class="form-group">
+                    <label>总金额: <span id="totalAmount">-</span></label>
+                </div>
+                <button type="submit" class="btn">确认销售</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 记录查看模态框 -->
+    <div id="recordsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="recordsTitle">📊 交易记录</h2>
+                <button class="close-btn" onclick="closeModal('recordsModal')">×</button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>商品</th>
+                            <th>数量</th>
+                            <th>金额</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加商品模态框 -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ 添加新商品</h2>
+                <button class="close-btn" onclick="closeModal('addProductModal')">×</button>
+            </div>
+            <form onsubmit="addNewProduct(event)">
+                <div class="form-group">
+                    <label>商品名称</label>
+                    <input type="text" id="productName" required placeholder="如：野生蜂蜜">
+                </div>
+                <div class="form-group">
+                    <label>单位</label>
+                    <input type="text" id="productUnit" required placeholder="如：斤、瓶、袋">
+                </div>
+                <div class="form-group">
+                    <label>售价 (元)</label>
+                    <input type="number" id="productPrice" step="0.01" required placeholder="输入售价">
+                </div>
+                <div class="form-group">
+                    <label>初始库存</label>
+                    <input type="number" id="productStock" min="0" value="0" placeholder="输入初始库存">
+                </div>
+                <button type="submit" class="btn">添加商品</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 库存预警模态框 -->
+    <div id="lowStockModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ 库存预警</h2>
+                <button class="close-btn" onclick="closeModal('lowStockModal')">×</button>
+            </div>
+            <div class="form-group">
+                <label>预警阈值</label>
+                <input type="number" id="lowStockThreshold" value="20" min="1" onchange="showLowStock()">
+            </div>
+            <div id="lowStockAlerts"></div>
+        </div>
+    </div>
+
+    <script>
+        // 数据存储
+        let storeData = {
+            products: {},
+            purchases: [],
+            sales: []
+        };
+
+        // 初始化数据
+        function initData() {
+            const saved = localStorage.getItem('shanhuoStore');
+            if (saved) {
+                storeData = JSON.parse(saved);
+            } else {
+                // 初始化示例数据
+                storeData = {
+                    products: {
+                        "MT001": { name: "野生蜂蜜", unit: "斤", price: 80, stock: 50 },
+                        "MT002": { name: "山核桃", unit: "斤", price: 45, stock: 100 },
+                        "MT003": { name: "野生菌干", unit: "斤", price: 120, stock: 30 },
+                        "MT004": { name: "山茶油", unit: "瓶", price: 88, stock: 60 },
+                        "MT005": { name: "红枣", unit: "斤", price: 35, stock: 80 }
+                    },
+                    purchases: [],
+                    sales: []
+                };
+                saveData();
+            }
+            updateStats();
+        }
+
+        // 保存数据
+        function saveData() {
+            localStorage.setItem('shanhuoStore', JSON.stringify(storeData));
+            updateStats();
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            const products = Object.keys(storeData.products).length;
+            let totalValue = 0;
+            for (let code in storeData.products) {
+                totalValue += storeData.products[code].stock * storeData.products[code].price;
+            }
+            document.getElementById('totalProducts').textContent = products;
+            document.getElementById('totalValue').textContent = '¥' + totalValue.toFixed(2);
+        }
+
+        // 显示模态框
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+            
+            // 更新对应的内容
+            if (modalId === 'inventoryModal') {
+                updateInventoryTable();
+            }
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 更新库存表格
+        function updateInventoryTable() {
+            const tbody = document.getElementById('inventoryBody');
+            tbody.innerHTML = '';
+            
+            for (let code in storeData.products) {
+                const product = storeData.products[code];
+                const status = product.stock === 0 ? 'danger' : 
+                              product.stock <= 20 ? 'warning' : 'success';
+                const statusText = product.stock === 0 ? '缺货' : 
+                                  product.stock <= 20 ? '低库存' : '正常';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${product.name}</td>
+                        <td>${product.stock} ${product.unit}</td>
+                        <td>¥${product.price}</td>
+                        <td><span class="badge badge-${status}">${statusText}</span></td>
+                    </tr>
+                `;
+            }
+        }
+
+        // 显示进货表单
+        function showPurchaseForm() {
+            const select = document.getElementById('purchaseProduct');
+            select.innerHTML = '<option value="">请选择商品</option>';
+            
+            for (let code in storeData.products) {
+                const product = storeData.products[code];
+                select.innerHTML += `<option value="${code}">${product.name} (库存: ${product.stock}${product.unit})</option>`;
+            }
+            
+            showModal('purchaseModal');
+        }
+
+        // 处理进货
+        function processPurchase(event) {
+            event.preventDefault();
+            
+            const code = document.getElementById('purchaseProduct').value;
+            const quantity = parseInt(document.getElementById('purchaseQuantity').value);
+            const price = parseFloat(document.getElementById('purchasePrice').value);
+            
+            if (!code || quantity <= 0 || price <= 0) {
+                alert('请填写完整信息！');
+                return;
+            }
+            
+            // 更新库存
+            storeData.products[code].stock += quantity;
+            
+            // 记录进货
+            storeData.purchases.push({
+                date: new Date().toLocaleString(),
+                code: code,
+                name: storeData.products[code].name,
+                quantity: quantity,
+                price: price,
+                total: quantity * price
+            });
+            
+            saveData();
+            alert('进货成功！');
+            closeModal('purchaseModal');
+            document.getElementById('purchaseProduct').value = '';
+            document.getElementById('purchaseQuantity').value = '';
+            document.getElementById('purchasePrice').value = '';
+        }
+
+        // 显示销售表单
+        function showSaleForm() {
+            const select = document.getElementById('saleProduct');
+            select.innerHTML = '<option value="">请选择商品</option>';
+            
+            for (let code in storeData.products) {
+                const product = storeData.products[code];
+                select.innerHTML += `<option value="${code}">${product.name} (库存: ${product.stock}${product.unit})</option>`;
+            }
+            
+            // 监听商品选择
+            select.onchange = function() {
+                const code = this.value;
+                if (code) {
+                    const product = storeData.products[code];
+                    document.getElementById('currentStock').textContent = product.stock + ' ' + product.unit;
+                    document.getElementById('salePrice').textContent = '¥' + product.price;
+                    
+                    const quantity = document.getElementById('saleQuantity').value || 0;
+                    document.getElementById('totalAmount').textContent = '¥' + (quantity * product.price).toFixed(2);
+                }
+            };
+            
+            // 监听数量变化
+            document.getElementById('saleQuantity').oninput = function() {
+                const code = document.getElementById('saleProduct').value;
+                if (code) {
+                    const product = storeData.products[code];
+                    const quantity = this.value || 0;
+                    document.getElementById('totalAmount').textContent = '¥' + (quantity * product.price).toFixed(2);
+                }
+            };
+            
+            showModal('saleModal');
+        }
+
+        // 处理销售
+        function processSale(event) {
+            event.preventDefault();
+            
+            const code = document.getElementById('saleProduct').value;
+            const quantity = parseInt(document.getElementById('saleQuantity').value);
+            
+            if (!code || quantity <= 0) {
+                alert('请填写完整信息！');
+                return;
+            }
+            
+            if (storeData.products[code].stock < quantity) {
+                alert('库存不足！');
+                return;
+            }
+            
+            const product = storeData.products[code];
+            const totalAmount = quantity * product.price;
+            
+            // 更新库存
+            product.stock -= quantity;
+            
+            // 记录销售
+            storeData.sales.push({
+                date: new Date().toLocaleString(),
+                code: code,
+                name: product.name,
+                quantity: quantity,
+                price: product.price,
+                total: totalAmount
+            });
+            
+            saveData();
+            alert(`销售成功！金额：¥${totalAmount.toFixed(2)}`);
+            closeModal('saleModal');
+            document.getElementById('saleProduct').value = '';
+            document.getElementById('saleQuantity').value = '';
+        }
+
+        // 显示记录
+        function showRecords(type) {
+            document.getElementById('recordsTitle').textContent = type === 'sales' ? '📤 销售记录' : '📥 进货记录';
+            const tbody = document.getElementById('recordsBody');
+            const records = type === 'sales' ? storeData.sales : storeData.purchases;
+            
+            tbody.innerHTML = '';
+            records.slice(-20).reverse().forEach(record => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${record.date}</td>
+                        <td>${record.name}</td>
+                        <td>${record.quantity}</td>
+                        <td>¥${record.total.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">暂无记录</td></tr>';
+            }
+            
+            showModal('recordsModal');
+        }
+
+        // 显示添加商品表单
+        function showAddProductForm() {
+            showModal('addProductModal');
+        }
+
+        // 添加新商品
+        function addNewProduct(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('productName').value;
+            const unit = document.getElementById('productUnit').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const stock = parseInt(document.getElementById('productStock').value) || 0;
+            
+            // 生成商品编码
+            const code = 'MT' + (Object.keys(storeData.products).length + 1).toString().padStart(3, '0');
+            
+            storeData.products[code] = {
+                name: name,
+                unit: unit,
+                price: price,
+                stock: stock
+            };
+            
+            saveData();
+            alert('商品添加成功！');
+            closeModal('addProductModal');
+            document.getElementById('productName').value = '';
+            document.getElementById('productUnit').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productStock').value = '';
+        }
+
+        // 显示库存预警
+        function showLowStock() {
+            const threshold = parseInt(document.getElementById('lowStockThreshold').value) || 20;
+            const alertsDiv = document.getElementById('lowStockAlerts');
+            
+            let html = '';
+            let hasLowStock = false;
+            
+            for (let code in storeData.products) {
+                const product = storeData.products[code];
+                if (product.stock <= threshold) {
+                    hasLowStock = true;
+                    html += `
+                        <div class="alert alert-warning">
+                            <strong>${product.name}</strong> - 仅剩 ${product.stock} ${product.unit}
+                        </div>
+                    `;
+                }
+            }
+            
+            if (!hasLowStock) {
+                html = '<p style="text-align:center; color:#666; padding:20px;">所有商品库存充足 ✓</p>';
+            }
+            
+            alertsDiv.innerHTML = html;
+            showModal('lowStockModal');
+        }
+
+        // 重置所有数据
+        function resetAllData() {
+            if (confirm('确定要重置所有数据吗？此操作不可恢复！')) {
+                localStorage.removeItem('shanhuoStore');
+                initData();
+                alert('数据已重置！');
+            }
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // 初始化
+        initData();
+    </script>
+</body>
+</html>
